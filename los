@@ -1,0 +1,42 @@
+#!/bin/bash
+onlyWords=no
+atLineStart=no
+help=no
+while [ $# -gt 2 ]
+do
+    case "$1" in
+    --help) help=yes; break;; # help option recognized => exit the while loop
+    -w) onlyWords=yes; shift;; # remember that only entire words to search for
+    -s) atLineStart=yes; shift;; # remember that must be at line start
+    -ws|-sw) onlyWords=yes; atLineStart=yes; shift;; # remember both
+    -*) echo "$0: Unknown option $1"; exit 1;; # unknown option => exit
+    *) echo "$0: Too many arguments: $*"; exit 2;; # >=3 arguments => exit
+    esac
+done
+if [ "$help" = yes -o "$1" = "--help" -o "$2" = "--help" ] # help is requested
+then
+    echo "Usage: $0 [-ws] [--help] PATTERN FILE"
+    exit 0 # print help text and exit
+fi
+
+if [ -n "$2" ]
+then
+    if [ ! -f $2 ]
+    then
+    echo "$0: File <$2> does not exist."
+    exit 3 # file name is non-empty, but file not found
+    fi
+    if [ $onlyWords = yes ]
+    then
+    woption=-w
+    fi 
+    if [ $atLineStart = yes ]
+    then
+    lineStartSymbol=^
+    fi
+    echo `egrep -o $woption $lineStartSymbol$1 $2 | wc -l` # core functionality
+else
+    echo "$0: Missing pattern or file name."
+    exit 4 # $2 is empty, so at most 1 parameter specified
+fi
+exit 0
